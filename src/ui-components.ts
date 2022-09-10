@@ -11,6 +11,8 @@ export class NodeGroup extends HTMLElement {
       this.innerHTML = "";
       this.appendChild(this.templateContent.cloneNode(true));
       this.querySelector(".node-group-content").innerHTML = rawHtml;
+
+      this.dispatchEvent(new Event("ready"));
     });
   }
   static get observedAttributes() {

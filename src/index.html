@@ -4,15 +4,15 @@
   </head>
   <body>
     <template id="node-group-template">
-      <div class="flex flex-col border-2 border-black w-96 rounded-md transition-[width,height]">
-        <div class="m-3 node-group-title"></div>
-        <hr class="border border-black mx-2" />
+      <div class="flex flex-col border-2 border-black rounded-md transition-[width,height]">
+        <div class="m-3 node-group-title cursor-pointer"></div>
+        <hr class="border-black mx-2" />
         <div class="m-3 node-group-content flex flex-row flex-wrap justify-around"></div>
       </div>
     </template>
 
     <template id="node-group-item-template">
-      <div class="border-2 border-black w-36 h-24 rounded-md mx-1 my-3">
+      <div class="border-2 border-black rounded-md mx-1 my-3 transition-[width,height]">
         <div class="h-full w-full node-group-item-content flex justify-center items-center"></div>
       </div>
     </template>

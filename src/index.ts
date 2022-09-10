@@ -37,6 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const txt = await (e.target as HTMLInputElement).files[0].text();
       try {
         instance.reset();
+        resizeObserver.disconnect();
+        resizeObserver.observe(document.querySelector("#container"));
+
         const yaml = load(txt);
         const groups = (yaml as InfoTree).groups;
         let md = 0;
@@ -48,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
           let tmpDiv = document.createElement("div");
           tmpDiv.id = `depth-${i}`;
           tmpDiv.classList.add("group-column");
+          resizeObserver.observe(tmpDiv);
           document.querySelector("#groups").appendChild(tmpDiv);
         }
 
@@ -61,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const info = groups[k];
           const ng = document.createElement("node-group");
           ng.title = k;
+          ng.classList.add("group-collapse");
           ng.id = `group-${k}`;
           info.items?.forEach((i) => {
             const ngi = document.createElement("node-group-item");
@@ -69,6 +74,14 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           document.querySelector(`#depth-${info.depth}`).appendChild(ng);
+
+          ng?.addEventListener("ready", () => {
+            ng.querySelector(".node-group-title")?.addEventListener("click", () => {
+              ng.classList.toggle("group-expand");
+              ng.classList.toggle("group-collapse");
+            });
+          });
+
           info.connections?.forEach((i) => {
             groupDefer.then(() => {
               const conn = instance.connect({
@@ -114,7 +127,6 @@ jsPlumbBrowserUI.ready(() => {
     dragOptions: { containment: ContainmentType.parentEnclosed },
   });
 
-  resizeObserver.observe(container);
   console.log(instance);
   /*
   instance.connect({
