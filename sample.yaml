@@ -1,0 +1,27 @@
+groups:
+  DMZ:
+    items:
+      - ip: 10.0.10.1
+      - ip: 10.0.10.2
+      - ip: 10.0.10.3
+    connections:
+      - to: AP
+        type: HTTP
+      - to: AP2
+        type: HTTP
+  AP:
+    items:
+      - ip: 10.0.100.1
+      - ip: 10.0.100.2
+      - ip: 10.0.100.3
+  AP2:
+    items:
+      - ip: 10.0.55.1
+      - ip: 10.0.55.2
+    connections:
+      - to: DB
+        type: TCP/3306
+  DB:
+    items:
+      - ip: 10.0.90.1
+      - ip: 10.0.90.2
