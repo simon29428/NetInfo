@@ -7,14 +7,13 @@
       <div class="flex flex-col border-2 border-black w-96 rounded-md transition-[width,height]">
         <div class="m-3">Title</div>
         <hr class="border border-black mx-2" />
-        <div class="m-3 node-group-content flex flex-row flex-wrap justify-between">
-        </div>
+        <div class="m-3 node-group-content flex flex-row flex-wrap justify-around"></div>
       </div>
     </template>
 
     <template id="node-group-item-template">
-      <div class="border-2 border-black w-24 h-24 rounded-md">
-        <div class="h-full w-full node-group-item-content  flex justify-center items-center"></div>
+      <div class="border-2 border-black w-36 h-24 rounded-md mx-1 my-3">
+        <div class="h-full w-full node-group-item-content flex justify-center items-center"></div>
       </div>
     </template>
 
@@ -29,16 +28,7 @@
       </div>
     </div>
     <div id="container" class="fixed top-0 left-0 w-screen h-screen z-0" style="border: 0">
-      <div class="flex justify-evenly">
-        <div class="flex flex-col h-screen justify-evenly" id="a1">
-          <node-group id="ep1">123</node-group>
-        </div>
-        <div class="flex flex-col h-screen justify-evenly" id="a2">
-          <div id="ep2" class="node">456</div>
-          <div id="ep3" class="node">789</div>
-          <div id="ep4" class="node">789</div>
-        </div>
-      </div>
+      <div id="groups" class="flex justify-evenly"></div>
     </div>
   </body>
 </html>

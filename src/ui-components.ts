@@ -5,6 +5,7 @@ export class NodeGroup extends HTMLElement {
     super();
     const template = document.querySelector("#node-group-template") as HTMLTemplateElement;
     this.templateContent = template.content;
+    this.templateContent.querySelector(".node-group-content").innerHTML = this.innerHTML;
     this.innerHTML = "";
     this.appendChild(this.templateContent.cloneNode(true));
   }

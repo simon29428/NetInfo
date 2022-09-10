@@ -6,6 +6,7 @@ import { mdiMagnify } from "@mdi/js";
 import { load } from "js-yaml";
 
 import { MdiIcon, NodeGroup, NodeGroupItem } from "./ui-components";
+import { InfoTree, InfoNode } from "./interface";
 
 let instance: BrowserJsPlumbInstance;
 
@@ -18,14 +19,38 @@ customElements.define("node-group-item", NodeGroupItem);
 
 customElements.define("mdi-icon", MdiIcon);
 
+function calcDepth(tree: Record<string, InfoNode>, key: string, depth: number): number {
+  let md = depth;
+  tree[key].depth = tree[key].depth || depth;
+  tree[key].connections?.forEach((conn) => {
+    md = Math.max(calcDepth(tree, conn.to, depth + 1), md);
+  });
+  return md;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   (document.querySelector("#search_btn") as MdiIcon).icon = mdiMagnify;
 
   (document.querySelector("#upload_file") as HTMLInputElement)?.addEventListener("change", async (e) => {
     if ((e.target as HTMLInputElement).files.length > 0) {
       const txt = await (e.target as HTMLInputElement).files[0].text();
-      const yaml = load(txt);
-      console.log(yaml);
+      try {
+        const yaml = load(txt);
+        const groups = (yaml as InfoTree).groups;
+        let md = 0;
+        for (let k in groups) {
+          md = Math.max(calcDepth(groups, k, 0), md);
+        }
+        document.querySelector("#groups").innerHTML = "";
+        for (let i = 0; i <= md; i++) {
+          let tmpDiv = document.createElement("div");
+          tmpDiv.id = `depth-${i}`;
+          tmpDiv.classList.add("group-column");
+          document.querySelector("#groups").appendChild(tmpDiv);
+        }
+      } catch (e) {
+        alert(e);
+      }
     }
     (document.querySelector("#upload_file") as HTMLInputElement).value = "";
   });
@@ -46,6 +71,7 @@ jsPlumbBrowserUI.ready(() => {
 
   instance.manage(container);
 
+  /*
   instance.connect({
     source: document.querySelector("#ep1"),
     target: document.querySelector("#ep2"),
@@ -84,4 +110,5 @@ jsPlumbBrowserUI.ready(() => {
       { type: "Label", options: { label: "Test", cssClass: "mt-5" } },
     ],
   });
+  */
 });
