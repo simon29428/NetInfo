@@ -3,7 +3,7 @@ export interface ConnectionInfo {
   type: string;
 }
 export interface ItemInfo {
-  ip: Array<string>;
+  ip: string;
 }
 
 export interface InfoNode {

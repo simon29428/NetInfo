@@ -1,7 +1,8 @@
 import "./style.css";
 import * as jsPlumbBrowserUI from "@jsplumb/browser-ui";
 import { ContainmentType, BrowserJsPlumbInstance } from "@jsplumb/browser-ui";
-import { BlankEndpoint } from "@jsplumb/core";
+import { BlankEndpoint, StraightConnector, ArrowOverlay, LabelOverlay } from "@jsplumb/core";
+import { AnchorLocations } from "@jsplumb/common";
 import { mdiMagnify } from "@mdi/js";
 import { load } from "js-yaml";
 
@@ -35,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if ((e.target as HTMLInputElement).files.length > 0) {
       const txt = await (e.target as HTMLInputElement).files[0].text();
       try {
+        instance.reset();
         const yaml = load(txt);
         const groups = (yaml as InfoTree).groups;
         let md = 0;
@@ -48,12 +50,48 @@ document.addEventListener("DOMContentLoaded", () => {
           tmpDiv.classList.add("group-column");
           document.querySelector("#groups").appendChild(tmpDiv);
         }
+
+        let groupResolve: (value: unknown) => void;
+
+        const groupDefer = new Promise((resolve, reject) => {
+          groupResolve = resolve;
+        });
+
         for (let k in groups) {
           const info = groups[k];
           const ng = document.createElement("node-group");
           ng.title = k;
-          ng.innerText = "123";
+          ng.id = `group-${k}`;
+          info.items?.forEach((i) => {
+            const ngi = document.createElement("node-group-item");
+            ngi.innerText = i.ip;
+            ng.appendChild(ngi);
+          });
+
           document.querySelector(`#depth-${info.depth}`).appendChild(ng);
+          info.connections?.forEach((i) => {
+            groupDefer.then(() => {
+              const conn = instance.connect({
+                source: document.querySelector(`#${ng.id}`),
+                target: document.querySelector(`#group-${i.to}`),
+                endpointStyle: BlankEndpoint,
+                anchors: [AnchorLocations.AutoDefault, AnchorLocations.AutoDefault],
+                connector: {
+                  type: StraightConnector.type,
+                  options: { stub: 30 },
+                },
+                overlays: [{ type: ArrowOverlay.type, options: { location: 1 } }],
+              });
+              if (i.type) {
+                conn.addOverlay({
+                  type: LabelOverlay.type,
+                  options: { label: i.type, cssClass: "bg-white" },
+                });
+              }
+            });
+          });
+
+          groupResolve(null);
         }
       } catch (e) {
         alert(e);
@@ -76,8 +114,8 @@ jsPlumbBrowserUI.ready(() => {
     dragOptions: { containment: ContainmentType.parentEnclosed },
   });
 
-  instance.manage(container);
-
+  resizeObserver.observe(container);
+  console.log(instance);
   /*
   instance.connect({
     source: document.querySelector("#ep1"),

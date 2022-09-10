@@ -20,7 +20,6 @@ export class NodeGroup extends HTMLElement {
     setTimeout(() => {
       if (name === "title") {
         if (newValue !== "") {
-          console.log(this);
           this.querySelector(".node-group-title").innerHTML = newValue;
         } else {
           this.querySelector(".node-group-title").innerHTML = "";
