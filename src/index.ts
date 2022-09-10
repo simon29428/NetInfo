@@ -48,6 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
           tmpDiv.classList.add("group-column");
           document.querySelector("#groups").appendChild(tmpDiv);
         }
+        for (let k in groups) {
+          const info = groups[k];
+          const ng = document.createElement("node-group");
+          ng.title = k;
+          ng.innerText = "123";
+          document.querySelector(`#depth-${info.depth}`).appendChild(ng);
+        }
       } catch (e) {
         alert(e);
       }

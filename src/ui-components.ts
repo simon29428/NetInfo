@@ -1,20 +1,39 @@
 export class NodeGroup extends HTMLElement {
   private nodeGroupItems: Array<NodeGroupItem>;
-  private templateContent;
+  private templateContent: DocumentFragment;
+
   constructor() {
     super();
     const template = document.querySelector("#node-group-template") as HTMLTemplateElement;
     this.templateContent = template.content;
-    this.templateContent.querySelector(".node-group-content").innerHTML = this.innerHTML;
-    this.innerHTML = "";
-    this.appendChild(this.templateContent.cloneNode(true));
+    setTimeout(() => {
+      const rawHtml = this.innerHTML;
+      this.innerHTML = "";
+      this.appendChild(this.templateContent.cloneNode(true));
+      this.querySelector(".node-group-content").innerHTML = rawHtml;
+    });
+  }
+  static get observedAttributes() {
+    return ["title"];
+  }
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    setTimeout(() => {
+      if (name === "title") {
+        if (newValue !== "") {
+          console.log(this);
+          this.querySelector(".node-group-title").innerHTML = newValue;
+        } else {
+          this.querySelector(".node-group-title").innerHTML = "";
+        }
+      }
+    });
   }
 
   public set items(v: Array<NodeGroupItem>) {
     this.nodeGroupItems = v;
-    this.templateContent.querySelector(".node-group-content").innerHTML = "";
+    this.querySelector(".node-group-content").innerHTML = "";
     this.nodeGroupItems?.forEach((v) => {
-      this.templateContent.querySelector(".node-group-content").appendChild(v);
+      this.querySelector(".node-group-content").appendChild(v);
     });
   }
 }
@@ -22,11 +41,13 @@ export class NodeGroup extends HTMLElement {
 export class NodeGroupItem extends HTMLElement {
   constructor() {
     super();
-    const template = document.querySelector("#node-group-item-template") as HTMLTemplateElement;
-    const templateContent = template.content;
-    templateContent.querySelector(".node-group-item-content").innerHTML = this.innerHTML;
-    this.innerHTML = "";
-    this.appendChild(templateContent.cloneNode(true));
+    setTimeout(() => {
+      const template = document.querySelector("#node-group-item-template") as HTMLTemplateElement;
+      const templateContent = template.content;
+      templateContent.querySelector(".node-group-item-content").innerHTML = this.innerHTML;
+      this.innerHTML = "";
+      this.appendChild(templateContent.cloneNode(true));
+    });
   }
 }
 
