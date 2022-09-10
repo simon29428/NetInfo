@@ -22,7 +22,7 @@ customElements.define("mdi-icon", MdiIcon);
 
 function calcDepth(tree: Record<string, InfoNode>, key: string, depth: number): number {
   let md = depth;
-  tree[key].depth = tree[key].depth || depth;
+  tree[key].depth = Math.max(tree[key].depth, depth) || depth;
   tree[key].connections?.forEach((conn) => {
     md = Math.max(calcDepth(tree, conn.to, depth + 1), md);
   });
