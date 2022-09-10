@@ -1,9 +1,11 @@
 {
   "dependencies": {
-    "@jsplumb/browser-ui": "^5.11.3"
+    "@jsplumb/browser-ui": "^5.11.3",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@mdi/js": "^7.0.96",
+    "@types/js-yaml": "^4.0.5",
     "autoprefixer": "^10.4.8",
     "css-loader": "^6.7.1",
     "html-webpack-plugin": "^5.5.0",

@@ -1,23 +1,38 @@
 import "./style.css";
 import * as jsPlumbBrowserUI from "@jsplumb/browser-ui";
-import { ContainmentType } from "@jsplumb/browser-ui";
+import { ContainmentType, BrowserJsPlumbInstance } from "@jsplumb/browser-ui";
 import { BlankEndpoint } from "@jsplumb/core";
 import { mdiMagnify } from "@mdi/js";
+import { load } from "js-yaml";
 
-let instance;
+import { MdiIcon, NodeGroup, NodeGroupItem } from "./ui-components";
 
-console.log(mdiMagnify);
+let instance: BrowserJsPlumbInstance;
 
-function getMdiTemplate(mdiStr: string): string {
-  return `
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="24" height="24">
-      <g><path fill="#000000" d="${mdiStr}"/></g>
-    </svg>
-  `;
-}
+const resizeObserver = new ResizeObserver(() => {
+  instance?.repaintEverything();
+});
+
+customElements.define("node-group", NodeGroup);
+customElements.define("node-group-item", NodeGroupItem);
+
+customElements.define("mdi-icon", MdiIcon);
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("#search_btn").innerHTML = getMdiTemplate(mdiMagnify);
+  (document.querySelector("#search_btn") as MdiIcon).icon = mdiMagnify;
+
+  (document.querySelector("#upload_file") as HTMLInputElement)?.addEventListener("change", async (e) => {
+    if ((e.target as HTMLInputElement).files.length > 0) {
+      const txt = await (e.target as HTMLInputElement).files[0].text();
+      const yaml = load(txt);
+      console.log(yaml);
+    }
+    (document.querySelector("#upload_file") as HTMLInputElement).value = "";
+  });
+
+  document.querySelector("#upload_btn")?.addEventListener("click", () => {
+    (document.querySelector("#upload_file") as HTMLInputElement)?.click();
+  });
 });
 
 jsPlumbBrowserUI.ready(() => {
@@ -64,6 +79,9 @@ jsPlumbBrowserUI.ready(() => {
       type: "Straight",
       options: { stub: 30 },
     },
-    overlays: [{ type: "Arrow", options: { location: 1 } }],
+    overlays: [
+      { type: "Arrow", options: { location: 1 } },
+      { type: "Label", options: { label: "Test", cssClass: "mt-5" } },
+    ],
   });
 });
