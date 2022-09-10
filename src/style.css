@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.node {
+  @apply w-24 h-24 border-solid	 border-black border-2 rounded-xl;
+}
