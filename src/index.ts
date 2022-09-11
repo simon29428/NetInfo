@@ -19,7 +19,7 @@ customElements.define("node-group", NodeGroup);
 customElements.define("node-group-item", NodeGroupItem);
 
 customElements.define("mdi-icon", MdiIcon);
-const maxDepth = 8;
+const maxDepth = 10;
 function calcDepth(tree: Record<string, InfoNode>, key: string, depth: number): number {
   let md = depth;
   if (depth > maxDepth) {
