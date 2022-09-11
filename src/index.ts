@@ -19,9 +19,12 @@ customElements.define("node-group", NodeGroup);
 customElements.define("node-group-item", NodeGroupItem);
 
 customElements.define("mdi-icon", MdiIcon);
-
+const maxDepth = 8;
 function calcDepth(tree: Record<string, InfoNode>, key: string, depth: number): number {
   let md = depth;
+  if (depth > maxDepth) {
+    return depth;
+  }
   tree[key].depth = Math.max(tree[key].depth, depth) || depth;
   tree[key].connections?.forEach((conn) => {
     md = Math.max(calcDepth(tree, conn.to, depth + 1), md);
