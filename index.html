@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firewall Topology Visualizer</title>
+    <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #eef1f5; /* Light background for the page */
+        }
+        #firewall-graph {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #d0d0d0;
+            box-sizing: border-box;
+            background-color: #ffffff;
+        }
+        .controls-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: column; /* Stack panels vertically */
+            gap: 10px;
+            z-index: 10;
+        }
+        .controls-panel {
+            background-color: rgba(252, 252, 253, 0.98);
+            padding: 12px 18px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.08);
+            min-width: 240px;
+            font-size: 13px;
+            align-self: flex-start;
+            transition: box-shadow 0.3s ease;
+        }
+        .controls-panel:hover {
+            box-shadow: 0 3px 6px rgba(0,0,0,0.12), 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .controls-panel h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 10px;
+            color: #2c3e50;
+        }
+        .controls-panel label {
+            display: block;
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #34495e;
+            margin-bottom: 3px;
+        }
+        .controls-panel input[type="text"],
+        .controls-panel input[type="number"],
+        .controls-panel select {
+            width: calc(100% - 18px);
+            margin-top: 2px;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #bdc3c7;
+            box-sizing: border-box;
+            font-size: 12px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .controls-panel input[type="text"]:focus,
+        .controls-panel input[type="number"]:focus,
+        .controls-panel select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        .controls-panel button {
+            cursor: pointer;
+            color: white;
+            border: none;
+            padding: 8px 14px; /* Slightly more padding */
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 10px;
+            margin-right: 6px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+        }
+        .controls-panel button:hover {
+            transform: translateY(-1px); /* Subtle lift effect */
+        }
+        .controls-panel button:active {
+            transform: translateY(0px);
+        }
+        .controls-panel button.primary-action { background-color: #2ecc71; } /* Green */
+        .controls-panel button.primary-action:hover { background-color: #27ae60; }
+        .controls-panel button.secondary-action { background-color: #e74c3c; } /* Red */
+        .controls-panel button.secondary-action:hover { background-color: #c0392b; }
+        .controls-panel button.neutral-action { background-color: #3498db; } /* Blue */
+        .controls-panel button.neutral-action:hover { background-color: #2980b9; }
+        .controls-panel button.info-action { background-color: #1abc9c; } /* Teal */
+        .controls-panel button.info-action:hover { background-color: #16a085; }
+
+        #info-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 320px; /* Slightly wider */
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            background-color: #ffffff;
+            border: 1px solid #dce4ec;
+            border-radius: 6px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 20;
+            font-size: 13px;
+            display: none; /* Hidden by default */
+        }
+        #info-panel.visible {
+            display: block;
+        }
+        #info-panel h4 {
+            margin-top: 0; font-size: 16px; color: #2c3e50; border-bottom: 1px solid #e5e5e5; padding-bottom: 10px; margin-bottom: 12px; font-weight: 600;
+        }
+        #info-content { max-height: calc(100vh - 120px); overflow-y: auto; } /* Limit content height */
+        #info-content pre { background-color: #f0f3f4; padding: 12px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-size: 11px; line-height: 1.4; color: #34495e; max-height: 300px; overflow-y: auto; border: 1px solid #e0e6e8;}
+        #info-content p { margin-bottom: 6px; line-height: 1.6; color: #34495e; }
+        #info-content strong { color: #2c3e50; font-weight: 600; }
+        #info-content ul { padding-left: 20px; margin-top: 5px; margin-bottom: 10px; }
+        #info-content li { margin-bottom: 4px; }
+        #close-info-panel { margin-top: 15px; padding: 7px 12px; float: right; }
+
+    </style>
+</head>
+<body>
+    <div class="controls-container">
+        <div id="simulation-controls" class="controls-panel">
+            <h3>Simulate Traffic</h3>
+            <label for="sim-source-ip">Source IP:</label>
+            <input type="text" id="sim-source-ip" placeholder="e.g., 192.168.10.100">
+            <label for="sim-dest-ip">Destination IP:</label>
+            <input type="text" id="sim-dest-ip" placeholder="e.g., 10.0.1.10">
+            <label for="sim-dest-port">Dest Port:</label>
+            <input type="number" id="sim-dest-port" placeholder="e.g., 443">
+            <label for="sim-protocol">Protocol:</label>
+            <select id="sim-protocol">
+                <option value="TCP">TCP</option>
+                <option value="UDP">UDP</option>
+                <option value="ANY">ANY</option>
+            </select>
+            <button id="simulate-btn" class="primary-action">Simulate</button>
+            <button id="clear-simulation-btn" class="secondary-action">Clear Sim</button>
+        </div>
+
+        <div id="search-controls" class="controls-panel">
+            <h3>Search Graph</h3>
+            <label for="search-term">Search Term:</label>
+            <input type="text" id="search-term" placeholder="IP, Port, Tag, Name...">
+            <button id="search-btn" class="primary-action">Search</button>
+            <button id="clear-search-btn" class="secondary-action">Clear Search</button>
+        </div>
+
+        <div id="data-controls" class="controls-panel">
+            <h3>Data Management</h3>
+            <button id="export-json-btn" class="info-action">Export JSON</button>
+            <input type="file" id="import-json-file" accept=".json" style="display: none;">
+            <button id="import-json-btn" class="info-action">Import JSON</button>
+            <button id="analyze-rules-btn" class="neutral-action" style="margin-top:10px;">Analyze Rules</button> <!-- Moved Analyze button here -->
+        </div>
+    </div>
+
+    <div id="info-panel"> <!-- Initially hidden via CSS (no 'visible' class) -->
+        <h4>Selection Details</h4>
+        <div id="info-content">
+            <p>Click on a node or edge to see details.</p>
+        </div>
+        <button id="close-info-panel" class="secondary-action">Close</button>
+    </div>
+
+    <div id="firewall-graph"></div>
+
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script type="text/javascript" src="app.js"></script>
+</body>
+</html>
