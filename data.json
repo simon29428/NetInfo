@@ -1,0 +1,140 @@
+{
+  "objects": [
+    {
+      "id": "obj-web-server-1",
+      "name": "WebServer01",
+      "type": "host",
+      "value": "10.0.1.10",
+      "tags": ["tag-web", "tag-critical"],
+      "zone": "zone-dmz"
+    },
+    {
+      "id": "obj-app-server-1",
+      "name": "AppServer01",
+      "type": "host",
+      "value": "192.168.1.20",
+      "tags": ["tag-app", "tag-backend"],
+      "zone": "zone-internal"
+    },
+    {
+      "id": "obj-app-server-2",
+      "name": "AppServer02",
+      "type": "host",
+      "value": "192.168.1.21",
+      "tags": ["tag-app", "tag-backend"],
+      "zone": "zone-internal"
+    },
+    {
+      "id": "obj-db-server-1",
+      "name": "DBServer01",
+      "type": "host",
+      "value": "192.168.2.30",
+      "tags": ["tag-db", "tag-critical", "tag-backend"],
+      "zone": "zone-corp"
+    },
+    {
+      "id": "obj-user-pc",
+      "name": "User PC",
+      "type": "host",
+      "value": "192.168.10.100",
+      "tags": ["tag-user"],
+      "zone": "zone-internal"
+    },
+    {
+      "id": "obj-external-any",
+      "name": "ANY (External)",
+      "type": "any",
+      "value": "0.0.0.0/0",
+      "tags": [],
+      "zone": "zone-external"
+    }
+  ],
+  "tags": [
+    { "id": "tag-web", "name": "Web", "color": "#3498DB" },
+    { "id": "tag-app", "name": "App", "color": "#9B59B6" },
+    { "id": "tag-db", "name": "Database", "color": "#E67E22" },
+    { "id": "tag-critical", "name": "Critical", "color": "#E74C3C" },
+    { "id": "tag-backend", "name": "Backend" },
+    { "id": "tag-user", "name": "UserDevice", "color": "#2ECC71"},
+    { "id": "tag-security-audit", "name": "AuditMe", "color": "#F1C40F"}
+  ],
+  "groups": [
+    {
+      "id": "group-app-servers",
+      "name": "Application Servers",
+      "members": ["obj-app-server-1", "obj-app-server-2"],
+      "tags": ["tag-backend"]
+    }
+  ],
+  "zones": [
+    { "id": "zone-dmz", "name": "DMZ", "color": "#F39C12" },
+    { "id": "zone-internal", "name": "Internal", "color": "#27AE60" },
+    { "id": "zone-corp", "name": "Corporate", "color": "#2980B9" },
+    { "id": "zone-external", "name": "External", "color": "#7F8C8D" }
+  ],
+  "rules": [
+    {
+      "id": "rule-ext-to-web",
+      "name": "External HTTPS to Web",
+      "source_zone": ["zone-external"],
+      "destination_zone": ["zone-dmz"],
+      "source_objects": ["obj-external-any"],
+      "destination_objects": ["obj-web-server-1"],
+      "services": [{ "protocol": "TCP", "destination_port": "443" }],
+      "action": "allow",
+      "enabled": true,
+      "tags": ["tag-critical"],
+      "description": "Allow HTTPS from public internet to primary web server."
+    },
+    {
+      "id": "rule-user-to-apps",
+      "name": "User to App Servers",
+      "source_zone": ["zone-internal"],
+      "destination_zone": ["zone-internal"],
+      "source_objects": ["obj-user-pc"],
+      "destination_objects": ["group-app-servers"],
+      "services": [{ "protocol": "TCP", "destination_port": "8080" }],
+      "action": "allow",
+      "enabled": true,
+      "tags": [],
+      "description": "Allow internal users to access application servers."
+    },
+    {
+      "id": "rule-web-to-apps",
+      "name": "Web to App Servers",
+      "source_zone": ["zone-dmz"],
+      "destination_zone": ["zone-internal"],
+      "source_objects": ["obj-web-server-1"],
+      "destination_objects": ["group-app-servers"],
+      "services": [{ "protocol": "TCP", "destination_port": "9000" }],
+      "action": "allow",
+      "enabled": true,
+      "tags": ["tag-backend", "tag-security-audit"]
+    },
+    {
+      "id": "rule-apps-to-db",
+      "name": "Apps to DB",
+      "source_zone": ["zone-internal"],
+      "destination_zone": ["zone-corp"],
+      "source_objects": ["group-app-servers"],
+      "destination_objects": ["obj-db-server-1"],
+      "services": [{ "protocol": "TCP", "destination_port": "3306" }],
+      "action": "allow",
+      "enabled": true,
+      "tags": ["tag-critical", "tag-backend"]
+    },
+    {
+      "id": "rule-deny-dmz-to-corp",
+      "name": "Deny DMZ to Corp (except DB)",
+      "source_zone": ["zone-dmz"],
+      "destination_zone": ["zone-corp"],
+      "source_objects": ["obj-web-server-1"],
+      "destination_objects": ["obj-db-server-1"],
+      "services": [{ "protocol": "TCP", "destination_port": "ANY" }],
+      "action": "deny",
+      "enabled": true,
+      "tags": ["tag-security-audit"],
+      "description": "Explicitly deny DMZ web server to Corporate DB for ports other than specified (this rule might be shadowed or conflict depending on order)"
+    }
+  ]
+}
