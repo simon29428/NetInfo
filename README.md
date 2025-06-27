@@ -19,7 +19,6 @@ Firewall Topology Visualizer 是一個純前端的 Web 工具，旨在幫助網�
     *   支援通過滑鼠滾輪或 Cytoscape.js 提供的導覽按鈕縮放視圖。
     *   支援拖曳畫布背景進行平移。
     *   點擊圖中的節點（物件、Zone、Group）或邊（規則）時，會在頁面右側彈出的「Selection Details」面板中顯示該元素的詳細屬性資訊和原始 JSON 資料。
-
 ## 如何使用
 
 1.  **開啟工具**: 直接在任何現代網頁瀏覽器（如 Chrome, Firefox, Edge）中打開 `index.html` 檔案即可開始使用。
