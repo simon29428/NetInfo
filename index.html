@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firewall Topology Visualizer</title>
-    <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
+    <title>Firewall Topology Visualizer (Cytoscape.js)</title>
+    <!-- Removed Vis.js CSS -->
     <style>
         body, html {
             margin: 0;
@@ -13,21 +13,22 @@
             height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            background-color: #eef1f5; /* Light background for the page */
+            background-color: #eef1f5;
         }
-        #firewall-graph {
+        #firewall-graph { /* This will be the Cytoscape container */
             width: 100%;
             height: 100%;
             border: 1px solid #d0d0d0;
             box-sizing: border-box;
             background-color: #ffffff;
+            position: relative; /* Needed for Cytoscape */
         }
         .controls-container {
             position: absolute;
             top: 10px;
             left: 10px;
             display: flex;
-            flex-direction: column; /* Stack panels vertically */
+            flex-direction: column;
             gap: 10px;
             z-index: 10;
         }
@@ -45,96 +46,60 @@
             box-shadow: 0 3px 6px rgba(0,0,0,0.12), 0 5px 15px rgba(0,0,0,0.1);
         }
         .controls-panel h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 15px;
-            font-weight: 600;
-            border-bottom: 1px solid #e5e5e5;
-            padding-bottom: 10px;
-            color: #2c3e50;
+            margin-top: 0; margin-bottom: 15px; font-size: 15px; font-weight: 600;
+            border-bottom: 1px solid #e5e5e5; padding-bottom: 10px; color: #2c3e50;
         }
         .controls-panel label {
-            display: block;
-            margin-top: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            color: #34495e;
-            margin-bottom: 3px;
+            display: block; margin-top: 12px; font-size: 12px; font-weight: 500;
+            color: #34495e; margin-bottom: 3px;
         }
         .controls-panel input[type="text"],
         .controls-panel input[type="number"],
         .controls-panel select {
-            width: calc(100% - 18px);
-            margin-top: 2px;
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #bdc3c7;
-            box-sizing: border-box;
-            font-size: 12px;
+            width: calc(100% - 18px); margin-top: 2px; margin-bottom: 10px; padding: 8px;
+            border-radius: 4px; border: 1px solid #bdc3c7; box-sizing: border-box; font-size: 12px;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         .controls-panel input[type="text"]:focus,
         .controls-panel input[type="number"]:focus,
         .controls-panel select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-            outline: none;
+            border-color: #3498db; box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); outline: none;
         }
         .controls-panel button {
-            cursor: pointer;
-            color: white;
-            border: none;
-            padding: 8px 14px; /* Slightly more padding */
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 12px;
-            font-weight: 500;
-            margin-top: 10px;
-            margin-right: 6px;
-            border-radius: 4px;
+            cursor: pointer; color: white; border: none; padding: 8px 14px; text-align: center;
+            text-decoration: none; display: inline-block; font-size: 12px; font-weight: 500;
+            margin-top: 10px; margin-right: 6px; border-radius: 4px;
             transition: background-color 0.2s ease-in-out, transform 0.1s ease;
         }
-        .controls-panel button:hover {
-            transform: translateY(-1px); /* Subtle lift effect */
-        }
-        .controls-panel button:active {
-            transform: translateY(0px);
-        }
-        .controls-panel button.primary-action { background-color: #2ecc71; } /* Green */
+        .controls-panel button:hover { transform: translateY(-1px); }
+        .controls-panel button:active { transform: translateY(0px); }
+        .controls-panel button.primary-action { background-color: #2ecc71; }
         .controls-panel button.primary-action:hover { background-color: #27ae60; }
-        .controls-panel button.secondary-action { background-color: #e74c3c; } /* Red */
+        .controls-panel button.secondary-action { background-color: #e74c3c; }
         .controls-panel button.secondary-action:hover { background-color: #c0392b; }
-        .controls-panel button.neutral-action { background-color: #3498db; } /* Blue */
+        .controls-panel button.neutral-action { background-color: #3498db; }
         .controls-panel button.neutral-action:hover { background-color: #2980b9; }
-        .controls-panel button.info-action { background-color: #1abc9c; } /* Teal */
+        .controls-panel button.info-action { background-color: #1abc9c; }
         .controls-panel button.info-action:hover { background-color: #16a085; }
 
         #info-panel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 320px; /* Slightly wider */
-            max-height: calc(100vh - 20px);
-            overflow-y: auto;
-            background-color: #ffffff;
-            border: 1px solid #dce4ec;
-            border-radius: 6px;
-            padding: 15px 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            z-index: 20;
-            font-size: 13px;
-            display: none; /* Hidden by default */
+            position: absolute; top: 10px; right: 10px; width: 320px;
+            max-height: calc(100vh - 20px); overflow-y: auto; background-color: #ffffff;
+            border: 1px solid #dce4ec; border-radius: 6px; padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 20; font-size: 13px;
+            display: none;
         }
-        #info-panel.visible {
-            display: block;
-        }
+        #info-panel.visible { display: block; }
         #info-panel h4 {
-            margin-top: 0; font-size: 16px; color: #2c3e50; border-bottom: 1px solid #e5e5e5; padding-bottom: 10px; margin-bottom: 12px; font-weight: 600;
+            margin-top: 0; font-size: 16px; color: #2c3e50; border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 10px; margin-bottom: 12px; font-weight: 600;
         }
-        #info-content { max-height: calc(100vh - 120px); overflow-y: auto; } /* Limit content height */
-        #info-content pre { background-color: #f0f3f4; padding: 12px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-size: 11px; line-height: 1.4; color: #34495e; max-height: 300px; overflow-y: auto; border: 1px solid #e0e6e8;}
+        #info-content { max-height: calc(100vh - 120px); overflow-y: auto; }
+        #info-content pre {
+            background-color: #f0f3f4; padding: 12px; border-radius: 4px; white-space: pre-wrap;
+            word-wrap: break-word; font-size: 11px; line-height: 1.4; color: #34495e;
+            max-height: 300px; overflow-y: auto; border: 1px solid #e0e6e8;
+        }
         #info-content p { margin-bottom: 6px; line-height: 1.6; color: #34495e; }
         #info-content strong { color: #2c3e50; font-weight: 600; }
         #info-content ul { padding-left: 20px; margin-top: 5px; margin-bottom: 10px; }
@@ -176,11 +141,11 @@
             <button id="export-json-btn" class="info-action">Export JSON</button>
             <input type="file" id="import-json-file" accept=".json" style="display: none;">
             <button id="import-json-btn" class="info-action">Import JSON</button>
-            <button id="analyze-rules-btn" class="neutral-action" style="margin-top:10px;">Analyze Rules</button> <!-- Moved Analyze button here -->
+            <button id="analyze-rules-btn" class="neutral-action" style="margin-top:10px;">Analyze Rules</button>
         </div>
     </div>
 
-    <div id="info-panel"> <!-- Initially hidden via CSS (no 'visible' class) -->
+    <div id="info-panel">
         <h4>Selection Details</h4>
         <div id="info-content">
             <p>Click on a node or edge to see details.</p>
@@ -190,7 +155,9 @@
 
     <div id="firewall-graph"></div>
 
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- Cytoscape.js via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    <!-- Removed Vis.js script -->
     <script type="text/javascript" src="app.js"></script>
 </body>
 </html>
